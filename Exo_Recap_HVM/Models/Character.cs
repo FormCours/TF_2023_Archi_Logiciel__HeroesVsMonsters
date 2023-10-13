@@ -7,8 +7,17 @@ using System.Threading.Tasks;
 
 namespace Exo_Recap_HVM.Models
 {
+    public delegate void AttackEvent(Character attacker, Character target, int dommage);
+
     public abstract class Character
     {
+        #region Events
+        // public event Action<Character, Character, int>? OnAttackEvent = null;
+        public event AttackEvent? OnAttackEvent = null;
+
+        public event Action<Character>? OnDeadEvent = null;
+        #endregion
+
         #region Field
         private int _Strength;
         private int _Stamina;
@@ -66,6 +75,9 @@ namespace Exo_Recap_HVM.Models
         {
             int dmg = D4.Roll() + GameHelper.GetModifier(Strength);
 
+            // Déclancher l'event
+            OnAttackEvent?.Invoke(this, target, dmg);
+
             target.TakeDammage(dmg);
         }
 
@@ -74,6 +86,11 @@ namespace Exo_Recap_HVM.Models
             if (dmg <= 0) { return; }
 
             _Health -= dmg;
+
+            if(!IsAlive)
+            {
+                OnDeadEvent?.Invoke(this);
+            }
         }
 
         protected void Healing(int value)

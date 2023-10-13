@@ -2,8 +2,18 @@
 
 void StartGame()
 {
-    Hero thierry = new Dwarf("Mister T");
     Dice d2 = new Dice(2);
+
+    Hero thierry = new Dwarf("Mister T");
+    thierry.OnAttackEvent += AfficherDetailCombat;
+    thierry.OnDeadEvent += (hero) =>
+    {
+        Console.WriteLine($"Le héro {hero.Name} a été vaincu !");
+    }; 
+    thierry.OnDeadEvent += (hero) =>
+    {
+        Console.WriteLine($"Game over !!!");
+    };
 
     Console.WriteLine($"L'aventure commence pour notre héro {thierry.Name}");
     Console.WriteLine($"\nStatique du héro :");
@@ -15,8 +25,10 @@ void StartGame()
     while (thierry.IsAlive)
     {
         Monster enemie = GenerateMonster();
-        Console.WriteLine($"Combat contre un « {enemie.Name} » !");
+        enemie.OnAttackEvent += AfficherDetailCombat;
+        enemie.OnDeadEvent += (enemie) => Console.WriteLine("Le monstre est mort !");
 
+        Console.WriteLine($"Combat contre un « {enemie.Name} » !");
         bool heroInitiative = (d2.Roll() == 1);
         while(thierry.IsAlive && enemie.IsAlive)
         {
@@ -40,11 +52,16 @@ void StartGame()
 
         Console.WriteLine();
     }
-    Console.WriteLine("Le héro a été vaincu !");
+    
 
     Console.WriteLine("\nRésultat de l'expedition :");
     Console.WriteLine($" - Or   : {thierry.Gold}");
     Console.WriteLine($" - Cuir : {thierry.Leather}");
+}
+
+void AfficherDetailCombat(Character attacker, Character defender, int dommage)
+{
+    Console.WriteLine($" - {attacker.Name} attaque {defender.Name} de {dommage} dégâts !");
 }
 
 Monster GenerateMonster()
